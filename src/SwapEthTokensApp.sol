@@ -15,16 +15,34 @@ contract SwapEthTokensApp {
 
     //Variables
     address public RouterV2Address;
+    address USDC;
+    address USDT;
+    address DAI;
+    
     //Events
 
     event SwapERC20Tokens(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
     event SwapETHForTokens(address tokenOut, uint256 amountIn, uint256 amountOut);
     event SwapTokensForETH(address tokenIn, uint256 amountIn, uint256 amountOut);
+    event AddLiquidity(address tokenA, address tokenB, uint256 lpTokenAmount);
+
+    //Modifiers
+
+    modifier validPairs(address tokenA, address tokenB){
+        require(tokenA != tokenB,"Tokens must be different");
+        bool isTokenAValid = (tokenA == USDT || tokenA == USDC || tokenA == DAI);
+        bool isTokenBValid = (tokenB == USDT || tokenB == USDC || tokenB == DAI);
+        require(isTokenAValid && isTokenBValid, "Tokens must be StableCoin");
+        _;
+    }
 
     //Constructor
 
-    constructor(address RouterV2Address_) {
+    constructor(address RouterV2Address_, address USDT_, address USDC_, address DAI_) {
         RouterV2Address = RouterV2Address_;
+        USDC = USDC_;
+        USDT = USDT_;
+        DAI = DAI_;
     }
 
     // 1. Swap exact tokens for tokens
@@ -33,7 +51,7 @@ contract SwapEthTokensApp {
         uint256 amountOutMin_,
         address[] memory path_,
         uint256 deadline_
-    ) external {
+    ) public returns(uint256 exactAmountOut){
         //Get first Token
         IERC20(path_[0]).safeTransferFrom(msg.sender, address(this), amountIn_);
         //Approve
@@ -43,6 +61,7 @@ contract SwapEthTokensApp {
             IRouterV2(RouterV2Address).swapExactTokensForTokens(amountIn_, amountOutMin_, path_, msg.sender, deadline_);
 
         emit SwapERC20Tokens(path_[0], path_[path_.length - 1], amountIn_, amountsOut_[amountsOut_.length - 1]);
+        return amountsOut_[amountsOut_.length - 1];
     }
 
     // 2. Swap Tokens for Exact Tokens
@@ -101,5 +120,21 @@ contract SwapEthTokensApp {
             IRouterV2(RouterV2Address).swapExactTokensForETH(amountIn_, amountOutMin_, path_, msg.sender, deadline_);
 
         emit SwapTokensForETH(path_[0], amountIn_, amounts[amounts.length - 1]);
+    }
+
+    // 6. Add Liquidity
+
+    function addLiquidityFromOneToken(uint256 amountIn_, uint256 amountOutMin_,address[] memory path_,address tokenA_, address tokenB_, uint256 amountAMin_, uint256 amountBMin_, uint256 deadline_) external validPairs(tokenA_, tokenB_){
+        
+        //Ensure only the necessary Token A is used
+         IERC20(tokenA_).safeTransferFrom(msg.sender, address(this), amountIn_/2);
+        //Swap Tokens to ensure 50/50
+        uint256 exactAmountOut_ = swapExactTokensForTokens(amountIn_/2, amountOutMin_,path_,deadline_);
+        //Add Liquidity
+        (,,uint256 lpTokenAmount) = IRouterV2(RouterV2Address).addLiquidity(tokenA_, tokenB_, amountIn_/2, exactAmountOut_, amountAMin_, amountBMin_, msg.sender, deadline_);
+
+        emit AddLiquidity(tokenA_, tokenB_, lpTokenAmount);
+
+
     }
 }
