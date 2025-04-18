@@ -134,6 +134,7 @@ contract SwapEthTokensApp {
         uint256 amountBMin_,
         uint256 deadline_
     ) external validPairs(tokenA_, tokenB_) {
+        require(amountIn_ > 0, "Amount must be above zero");
         uint256 halfAmount = amountIn_ / 2;
 
         IERC20(tokenA_).safeTransferFrom(msg.sender, address(this), halfAmount);
@@ -143,6 +144,25 @@ contract SwapEthTokensApp {
 
         approveAndAddLiquidity(tokenA_, tokenB_, halfAmount, exactAmountOut, amountAMin_, amountBMin_, deadline_);
     }
+
+    // 7. Add Liquidity 2 Tokens
+
+        function addLiquidityFromTwoTokens(
+        uint256 amountA_,
+        uint256 amountB_,
+        address tokenA_,
+        address tokenB_,
+        uint256 amountAMin_,
+        uint256 amountBMin_,
+        uint256 deadline_
+    ) external validPairs(tokenA_, tokenB_) { 
+        require(amountA_ > 0 && amountB_ > 0, "Amount must be above zero");
+        IERC20(tokenA_).safeTransferFrom(msg.sender, address(this), amountA_);
+        IERC20(tokenB_).safeTransferFrom(msg.sender, address(this), amountB_);
+        approveAndAddLiquidity(tokenA_, tokenB_, amountA_, amountB_, amountAMin_, amountBMin_, deadline_);
+    }
+
+    // Internal Functions
 
     function approveAndAddLiquidity(
         address tokenA_,
