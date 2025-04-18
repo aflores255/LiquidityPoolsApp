@@ -20,7 +20,7 @@ contract SwapTokensAppTest is Test {
     address DAI = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1; // DAI Address in Arbitrum One Mainnet
 
     function setUp() public {
-        swapEthTokensApp = new SwapEthTokensApp(routerAddress);
+        swapEthTokensApp = new SwapEthTokensApp(routerAddress, USDT, USDC, DAI);
     }
 
     function testInitialDeploy() public view {
@@ -40,7 +40,7 @@ contract SwapTokensAppTest is Test {
         uint256 userToken2BalanceBefore = IERC20(USDT).balanceOf(user1);
 
         IERC20(USDC).approve(address(swapEthTokensApp), amountIn_);
-        swapEthTokensApp.swapExactTokensForTokens(amountIn_, amountOutMin_, path_, deadline_);
+        swapEthTokensApp.swapExactTokensForTokens(amountIn_, amountOutMin_, path_, msg.sender, deadline_);
 
         uint256 userToken1BalanceAfter = IERC20(USDC).balanceOf(user1);
         uint256 userToken2BalanceAfter = IERC20(USDT).balanceOf(user1);
@@ -164,4 +164,47 @@ contract SwapTokensAppTest is Test {
         swapEthTokensApp.swapExactETHForTokens{value: ethAmount_}(amountOutMin_, path_, deadline_);
         vm.stopPrank();
     }
+
+    function testAddLiquidityFromOnePair() public {
+        uint256 amountIn_ = 10 * 1e6;
+        uint256 amountOutMin_ = 4.5 * 1e18;
+        address[] memory path_ = new address[](2);
+        path_[0] = USDT;
+        path_[1] = DAI;
+        address tokenA_ = USDT;
+        address tokenB_ = DAI;
+        uint256 amountAMin_ = 0;
+        uint256 amountBMin_ = 0;
+        uint256 deadline_ = 1744647360 + 600000;
+
+        vm.startPrank(user2);
+        IERC20(tokenA_).approve(address(swapEthTokensApp), amountIn_);
+        swapEthTokensApp.addLiquidityFromOneToken(
+            amountIn_, amountOutMin_, path_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
+        );
+        vm.stopPrank();
+    }
+
+      function testIncorrectPairsAddLiquidityFromOnePair() public {
+        uint256 amountIn_ = 10 * 1e6;
+        uint256 amountOutMin_ = 4.5 * 1e18;
+        address[] memory path_ = new address[](2);
+        path_[0] = USDT;
+        path_[1] = USDT;
+        address tokenA_ = USDT;
+        address tokenB_ = USDT;
+        uint256 amountAMin_ = 0;
+        uint256 amountBMin_ = 0;
+        uint256 deadline_ = 1744647360 + 600000;
+
+        vm.startPrank(user2);
+        IERC20(tokenA_).approve(address(swapEthTokensApp), amountIn_);
+        vm.expectRevert("Tokens must be different");
+        swapEthTokensApp.addLiquidityFromOneToken(
+            amountIn_, amountOutMin_, path_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
+        );
+        vm.stopPrank();
+    }
+
+
 }
