@@ -5,12 +5,12 @@
 pragma solidity 0.8.28;
 
 import "forge-std/Test.sol";
-import "../src/SwapEthTokensApp.sol";
+import "../src/SmartDefiApp.sol";
 
 //3. Contract
 
 contract SwapTokensAppTest is Test {
-    SwapEthTokensApp swapEthTokensApp;
+    SmartDefiApp smartDefiApp;
     address routerAddress = 0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24; // Arbitrum One
     address factoryAddress = 0xf1D7CC64Fb4452F05c498126312eBE29f30Fbcf9; // Arbitrum One
     address user1 = 0x29F01FA20886EFF9Ba9D08Ad8e9E1eC7ADcf89E6; // Holder USDC
@@ -22,11 +22,11 @@ contract SwapTokensAppTest is Test {
     address DAI = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1; // DAI Address in Arbitrum One Mainnet
 
     function setUp() public {
-        swapEthTokensApp = new SwapEthTokensApp(routerAddress, factoryAddress, USDT, USDC, DAI);
+        smartDefiApp = new SmartDefiApp(routerAddress, factoryAddress, USDT, USDC, DAI);
     }
 
     function testInitialDeploy() public view {
-        assert(swapEthTokensApp.RouterV2Address() == routerAddress);
+        assert(smartDefiApp.RouterV2Address() == routerAddress);
     }
 
     function testSwapExactTokensForTokens() public {
@@ -41,8 +41,8 @@ contract SwapTokensAppTest is Test {
         uint256 userToken1BalanceBefore = IERC20(USDC).balanceOf(user1);
         uint256 userToken2BalanceBefore = IERC20(USDT).balanceOf(user1);
 
-        IERC20(USDC).approve(address(swapEthTokensApp), amountIn_);
-        swapEthTokensApp.swapExactTokensForTokens(amountIn_, amountOutMin_, path_, user1, deadline_);
+        IERC20(USDC).approve(address(smartDefiApp), amountIn_);
+        smartDefiApp.swapExactTokensForTokens(amountIn_, amountOutMin_, path_, user1, deadline_);
 
         uint256 userToken1BalanceAfter = IERC20(USDC).balanceOf(user1);
         uint256 userToken2BalanceAfter = IERC20(USDT).balanceOf(user1);
@@ -69,9 +69,9 @@ contract SwapTokensAppTest is Test {
         uint256 userToken1BalanceBefore = IERC20(USDC).balanceOf(user1);
         uint256 userToken2BalanceBefore = IERC20(USDT).balanceOf(user1);
 
-        IERC20(USDC).approve(address(swapEthTokensApp), amountInMax_);
+        IERC20(USDC).approve(address(smartDefiApp), amountInMax_);
 
-        swapEthTokensApp.swapTokensForExactTokens(amountOut_, amountInMax_, path_, deadline_);
+        smartDefiApp.swapTokensForExactTokens(amountOut_, amountInMax_, path_, deadline_);
         uint256 userToken1BalanceAfter = IERC20(USDC).balanceOf(user1);
         uint256 userToken2BalanceAfter = IERC20(USDT).balanceOf(user1);
 
@@ -96,9 +96,9 @@ contract SwapTokensAppTest is Test {
         vm.startPrank(user1);
         uint256 userToken1BalanceBefore = IERC20(USDC).balanceOf(user1);
         uint256 userEthBalanceBefore = user1.balance;
-        IERC20(USDC).approve(address(swapEthTokensApp), amountIn_);
+        IERC20(USDC).approve(address(smartDefiApp), amountIn_);
 
-        swapEthTokensApp.swapExactTokensForETH(amountIn_, amountOutMin_, path_, deadline_);
+        smartDefiApp.swapExactTokensForETH(amountIn_, amountOutMin_, path_, deadline_);
         uint256 userToken1BalanceAfter = IERC20(USDC).balanceOf(user1);
 
         assert(user1.balance >= userEthBalanceBefore + amountOutMin_);
@@ -119,9 +119,9 @@ contract SwapTokensAppTest is Test {
         vm.startPrank(user1);
         uint256 userToken1BalanceBefore = IERC20(USDC).balanceOf(user1);
         uint256 userEthBalanceBefore = user1.balance;
-        IERC20(USDC).approve(address(swapEthTokensApp), amountInMax_);
+        IERC20(USDC).approve(address(smartDefiApp), amountInMax_);
 
-        swapEthTokensApp.swapTokensForExactETH(amountOut_, amountInMax_, path_, deadline_);
+        smartDefiApp.swapTokensForExactETH(amountOut_, amountInMax_, path_, deadline_);
         uint256 userToken1BalanceAfter = IERC20(USDC).balanceOf(user1);
 
         assert(user1.balance == userEthBalanceBefore + amountOut_);
@@ -145,7 +145,7 @@ contract SwapTokensAppTest is Test {
         vm.startPrank(user1);
         uint256 userTokenBalanceBefore = IERC20(USDC).balanceOf(user1);
         uint256 userEthBalanceBefore = user1.balance;
-        swapEthTokensApp.swapExactETHForTokens{value: ethAmount_}(amountOutMin_, path_, deadline_);
+        smartDefiApp.swapExactETHForTokens{value: ethAmount_}(amountOutMin_, path_, deadline_);
         uint256 userTokenBalanceAfter = IERC20(USDC).balanceOf(user1);
         assert(userEthBalanceBefore - user1.balance == ethAmount_);
         assert(userTokenBalanceAfter - userTokenBalanceBefore >= amountOutMin_);
@@ -163,7 +163,7 @@ contract SwapTokensAppTest is Test {
 
         vm.startPrank(user1);
         vm.expectRevert("Incorrect amount");
-        swapEthTokensApp.swapExactETHForTokens{value: ethAmount_}(amountOutMin_, path_, deadline_);
+        smartDefiApp.swapExactETHForTokens{value: ethAmount_}(amountOutMin_, path_, deadline_);
         vm.stopPrank();
     }
 
@@ -182,8 +182,8 @@ contract SwapTokensAppTest is Test {
         vm.startPrank(user2);
         //  Balance before Add Liquidity
         uint256 userTokenABefore = IERC20(tokenA_).balanceOf(user2);
-        IERC20(tokenA_).approve(address(swapEthTokensApp), amountIn_);
-        uint256 lpTokenAmount_ = swapEthTokensApp.addLiquidityFromOneToken(
+        IERC20(tokenA_).approve(address(smartDefiApp), amountIn_);
+        uint256 lpTokenAmount_ = smartDefiApp.addLiquidityFromOneToken(
             amountIn_, amountOutMin_, path_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
         );
 
@@ -212,9 +212,9 @@ contract SwapTokensAppTest is Test {
         uint256 deadline_ = 1744647360 + 600000;
 
         vm.startPrank(user2);
-        IERC20(tokenA_).approve(address(swapEthTokensApp), amountIn_);
+        IERC20(tokenA_).approve(address(smartDefiApp), amountIn_);
         vm.expectRevert("Tokens must be different");
-        swapEthTokensApp.addLiquidityFromOneToken(
+        smartDefiApp.addLiquidityFromOneToken(
             amountIn_, amountOutMin_, path_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
         );
         vm.stopPrank();
@@ -233,9 +233,9 @@ contract SwapTokensAppTest is Test {
         uint256 deadline_ = 1744647360 + 600000;
 
         vm.startPrank(user2);
-        IERC20(tokenA_).approve(address(swapEthTokensApp), amountIn_);
+        IERC20(tokenA_).approve(address(smartDefiApp), amountIn_);
         vm.expectRevert("Amount must be above zero");
-        swapEthTokensApp.addLiquidityFromOneToken(
+        smartDefiApp.addLiquidityFromOneToken(
             amountIn_, amountOutMin_, path_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
         );
         vm.stopPrank();
@@ -254,9 +254,9 @@ contract SwapTokensAppTest is Test {
         //  Balance before Add Liquidity
         uint256 userTokenABefore = IERC20(tokenA_).balanceOf(user3);
         uint256 userTokenBBefore = IERC20(tokenB_).balanceOf(user3);
-        IERC20(tokenA_).approve(address(swapEthTokensApp), amountA_);
-        IERC20(tokenB_).approve(address(swapEthTokensApp), amountB_);
-        uint256 lpTokenAmount_ = swapEthTokensApp.addLiquidityFromTwoTokens(
+        IERC20(tokenA_).approve(address(smartDefiApp), amountA_);
+        IERC20(tokenB_).approve(address(smartDefiApp), amountB_);
+        uint256 lpTokenAmount_ = smartDefiApp.addLiquidityFromTwoTokens(
             amountA_, amountB_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
         );
         //Balance After
@@ -279,9 +279,9 @@ contract SwapTokensAppTest is Test {
         uint256 deadline_ = 1744647360 + 600000;
 
         vm.startPrank(user3);
-        IERC20(tokenA_).approve(address(swapEthTokensApp), amountA_);
+        IERC20(tokenA_).approve(address(smartDefiApp), amountA_);
         vm.expectRevert("Tokens must be different");
-        swapEthTokensApp.addLiquidityFromTwoTokens(
+        smartDefiApp.addLiquidityFromTwoTokens(
             amountA_, amountA_, tokenA_, tokenA_, amountAMin_, amountAMin_, deadline_
         );
         vm.stopPrank();
@@ -297,10 +297,10 @@ contract SwapTokensAppTest is Test {
         uint256 deadline_ = 1744647360 + 600000;
 
         vm.startPrank(user3);
-        IERC20(tokenA_).approve(address(swapEthTokensApp), amountA_);
-        IERC20(tokenB_).approve(address(swapEthTokensApp), amountB_);
+        IERC20(tokenA_).approve(address(smartDefiApp), amountA_);
+        IERC20(tokenB_).approve(address(smartDefiApp), amountB_);
         vm.expectRevert("Amount must be above zero");
-        swapEthTokensApp.addLiquidityFromTwoTokens(
+        smartDefiApp.addLiquidityFromTwoTokens(
             amountA_, amountB_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
         );
         vm.stopPrank();
@@ -321,8 +321,8 @@ contract SwapTokensAppTest is Test {
         vm.startPrank(user2);
         //  Balance before Add Liquidity
         uint256 userTokenABefore = IERC20(tokenA_).balanceOf(user2);
-        IERC20(tokenA_).approve(address(swapEthTokensApp), amountIn_);
-        uint256 lpTokenAmount_ = swapEthTokensApp.addLiquidityFromOneToken(
+        IERC20(tokenA_).approve(address(smartDefiApp), amountIn_);
+        uint256 lpTokenAmount_ = smartDefiApp.addLiquidityFromOneToken(
             amountIn_, amountOutMin_, path_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
         );
 
@@ -336,12 +336,12 @@ contract SwapTokensAppTest is Test {
         assert(userLpBalance >= lpTokenAmount_);
         assert(userTokenAAfter < userTokenABefore);
 
-        IERC20(lpToken).approve(address(swapEthTokensApp), lpTokenAmount_);
-        swapEthTokensApp.removeLiquidity(tokenA_, tokenB_, lpTokenAmount_, amountAMin_, amountBMin_, user2, deadline_);
-        
+        IERC20(lpToken).approve(address(smartDefiApp), lpTokenAmount_);
+        smartDefiApp.removeLiquidity(tokenA_, tokenB_, lpTokenAmount_, amountAMin_, amountBMin_, user2, deadline_);
+
         uint256 userTokenAAfterRL = IERC20(tokenA_).balanceOf(user2);
         uint256 userLpBalanceAfterRL = IERC20(lpToken).balanceOf(user2);
-        
+
         assert(userTokenAAfterRL > userTokenAAfter);
         assert(userLpBalanceAfterRL < userLpBalance);
         vm.stopPrank();

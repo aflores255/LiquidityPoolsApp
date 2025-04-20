@@ -11,7 +11,7 @@ import "../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol"
 
 //3. Contract
 
-contract SwapEthTokensApp {
+contract SmartDefiApp {
     using SafeERC20 for IERC20;
 
     //Variables
@@ -27,6 +27,7 @@ contract SwapEthTokensApp {
     event SwapETHForTokens(address tokenOut, uint256 amountIn, uint256 amountOut);
     event SwapTokensForETH(address tokenIn, uint256 amountIn, uint256 amountOut);
     event AddLiquidity(address tokenA, address tokenB, uint256 lpTokenAmount);
+    event RemoveLiquidity(address tokenA, address tokenB, uint256 amountTokenA, uint256 amountTokenB);
 
     //Modifiers
 
@@ -184,9 +185,10 @@ contract SwapEthTokensApp {
         IERC20(lpTokenAddress).safeTransferFrom(msg.sender, address(this), liquidity_);
         //Approve LP Tokens
         IERC20(lpTokenAddress).approve(RouterV2Address, liquidity_);
-        IRouterV2(RouterV2Address).removeLiquidity(
+        (uint256 amountTokenA_, uint256 amountTokenB_) = IRouterV2(RouterV2Address).removeLiquidity(
             tokenA_, tokenB_, liquidity_, amountAMin_, amountBMin_, to_, deadline_
         );
+        emit RemoveLiquidity(tokenA_, tokenB_, amountTokenA_, amountTokenB_);
     }
 
     // Internal Functions
