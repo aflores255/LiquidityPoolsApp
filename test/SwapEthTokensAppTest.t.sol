@@ -186,7 +186,7 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
-      function testIncorrectPairAddLiquidityFromOneToken() public {
+    function testIncorrectPairAddLiquidityFromOneToken() public {
         uint256 amountIn_ = 10 * 1e6;
         uint256 amountOutMin_ = 4.5 * 1e18;
         address[] memory path_ = new address[](2);
@@ -207,7 +207,7 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
-      function testIncorrectAmountAddLiquidityFromOneToken() public {
+    function testIncorrectAmountAddLiquidityFromOneToken() public {
         uint256 amountIn_ = 0 * 1e6;
         uint256 amountOutMin_ = 4.5 * 1e18;
         address[] memory path_ = new address[](2);
@@ -228,7 +228,7 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
-       function testAddLiquidityFromTwoTokens() public {
+    function testAddLiquidityFromTwoTokens() public {
         uint256 amountA_ = 10 * 1e6;
         uint256 amountB_ = 10 * 1e18;
         address tokenA_ = USDT;
@@ -246,7 +246,7 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
-       function testIncorrectPairAddLiquidityFromTwoTokens() public {
+    function testIncorrectPairAddLiquidityFromTwoTokens() public {
         uint256 amountA_ = 10 * 1e6;
         address tokenA_ = USDT;
         uint256 amountAMin_ = 0;
@@ -261,7 +261,7 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
-     function testIncorrectAmountAddLiquidityFromTwoTokens() public {
+    function testIncorrectAmountAddLiquidityFromTwoTokens() public {
         uint256 amountA_ = 0 * 1e6;
         uint256 amountB_ = 10 * 1e18;
         address tokenA_ = USDT;
@@ -279,7 +279,4 @@ contract SwapTokensAppTest is Test {
         );
         vm.stopPrank();
     }
-    
-
-
 }

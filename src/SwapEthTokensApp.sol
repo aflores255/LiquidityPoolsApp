@@ -5,6 +5,7 @@
 pragma solidity 0.8.28;
 
 import "./interfaces/IRouterV2.sol";
+import "./interfaces/IFactory.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import "../lib/openzeppelin-contracts/contracts/token/ERC20/utils/SafeERC20.sol";
 
@@ -18,6 +19,7 @@ contract SwapEthTokensApp {
     address USDC;
     address USDT;
     address DAI;
+    address public FactoryAddress;
 
     //Events
 
@@ -38,8 +40,9 @@ contract SwapEthTokensApp {
 
     //Constructor
 
-    constructor(address RouterV2Address_, address USDT_, address USDC_, address DAI_) {
+    constructor(address RouterV2Address_, address FactoryAddress_, address USDT_, address USDC_, address DAI_) {
         RouterV2Address = RouterV2Address_;
+        FactoryAddress = FactoryAddress_;
         USDC = USDC_;
         USDT = USDT_;
         DAI = DAI_;
@@ -147,7 +150,7 @@ contract SwapEthTokensApp {
 
     // 7. Add Liquidity 2 Tokens
 
-        function addLiquidityFromTwoTokens(
+    function addLiquidityFromTwoTokens(
         uint256 amountA_,
         uint256 amountB_,
         address tokenA_,
@@ -155,11 +158,29 @@ contract SwapEthTokensApp {
         uint256 amountAMin_,
         uint256 amountBMin_,
         uint256 deadline_
-    ) external validPairs(tokenA_, tokenB_) { 
+    ) external validPairs(tokenA_, tokenB_) {
         require(amountA_ > 0 && amountB_ > 0, "Amount must be above zero");
         IERC20(tokenA_).safeTransferFrom(msg.sender, address(this), amountA_);
         IERC20(tokenB_).safeTransferFrom(msg.sender, address(this), amountB_);
         approveAndAddLiquidity(tokenA_, tokenB_, amountA_, amountB_, amountAMin_, amountBMin_, deadline_);
+    }
+
+    function removeLiquidity(
+        address tokenA_,
+        address tokenB_,
+        uint256 liquidity_,
+        uint256 amountAMin_,
+        uint256 amountBMin_,
+        address to_,
+        uint256 deadline_
+    ) external {
+        //Get Pair Address
+        address lpTokenAddress = IFactory(FactoryAddress).getPair(tokenA_, tokenB_);
+        //Approve LP Tokens
+        IERC20(lpTokenAddress).approve(RouterV2Address, liquidity_);
+        IRouterV2(RouterV2Address).removeLiquidity(
+            tokenA_, tokenB_, liquidity_, amountAMin_, amountBMin_, to_, deadline_
+        );
     }
 
     // Internal Functions
