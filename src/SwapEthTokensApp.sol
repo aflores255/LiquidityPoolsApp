@@ -136,7 +136,7 @@ contract SwapEthTokensApp {
         uint256 amountAMin_,
         uint256 amountBMin_,
         uint256 deadline_
-    ) external validPairs(tokenA_, tokenB_) {
+    ) external validPairs(tokenA_, tokenB_) returns (uint256 lpTokenAmount_) {
         require(amountIn_ > 0, "Amount must be above zero");
         uint256 halfAmount = amountIn_ / 2;
 
@@ -145,7 +145,9 @@ contract SwapEthTokensApp {
         // First step, swap tokens
         uint256 exactAmountOut = swapExactTokensForTokens(halfAmount, amountOutMin_, path_, address(this), deadline_);
 
-        approveAndAddLiquidity(tokenA_, tokenB_, halfAmount, exactAmountOut, amountAMin_, amountBMin_, deadline_);
+        lpTokenAmount_ =
+            approveAndAddLiquidity(tokenA_, tokenB_, halfAmount, exactAmountOut, amountAMin_, amountBMin_, deadline_);
+        return lpTokenAmount_;
     }
 
     // 7. Add Liquidity 2 Tokens
@@ -158,11 +160,13 @@ contract SwapEthTokensApp {
         uint256 amountAMin_,
         uint256 amountBMin_,
         uint256 deadline_
-    ) external validPairs(tokenA_, tokenB_) {
+    ) external validPairs(tokenA_, tokenB_) returns (uint256 lpTokenAmount_) {
         require(amountA_ > 0 && amountB_ > 0, "Amount must be above zero");
         IERC20(tokenA_).safeTransferFrom(msg.sender, address(this), amountA_);
         IERC20(tokenB_).safeTransferFrom(msg.sender, address(this), amountB_);
-        approveAndAddLiquidity(tokenA_, tokenB_, amountA_, amountB_, amountAMin_, amountBMin_, deadline_);
+        lpTokenAmount_ =
+            approveAndAddLiquidity(tokenA_, tokenB_, amountA_, amountB_, amountAMin_, amountBMin_, deadline_);
+        return lpTokenAmount_;
     }
 
     function removeLiquidity(
@@ -176,6 +180,8 @@ contract SwapEthTokensApp {
     ) external {
         //Get Pair Address
         address lpTokenAddress = IFactory(FactoryAddress).getPair(tokenA_, tokenB_);
+        //Transfer LP Tokens to Contract
+        IERC20(lpTokenAddress).safeTransferFrom(msg.sender, address(this), liquidity_);
         //Approve LP Tokens
         IERC20(lpTokenAddress).approve(RouterV2Address, liquidity_);
         IRouterV2(RouterV2Address).removeLiquidity(
@@ -193,7 +199,7 @@ contract SwapEthTokensApp {
         uint256 amountAMin_,
         uint256 amountBMin_,
         uint256 deadline_
-    ) internal {
+    ) internal returns (uint256 lpTokenAmount_) {
         IERC20(tokenA_).approve(RouterV2Address, amountA_);
         IERC20(tokenB_).approve(RouterV2Address, amountB_);
 
@@ -202,5 +208,6 @@ contract SwapEthTokensApp {
         );
 
         emit AddLiquidity(tokenA_, tokenB_, lpTokenAmount);
+        return lpTokenAmount;
     }
 }

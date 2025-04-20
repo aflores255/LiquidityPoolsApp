@@ -11,7 +11,8 @@ import "../src/SwapEthTokensApp.sol";
 
 contract SwapTokensAppTest is Test {
     SwapEthTokensApp swapEthTokensApp;
-    address routerAddress = 0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24; // Arbitrum one
+    address routerAddress = 0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24; // Arbitrum One
+    address factoryAddress = 0xf1D7CC64Fb4452F05c498126312eBE29f30Fbcf9; // Arbitrum One
     address user1 = 0x29F01FA20886EFF9Ba9D08Ad8e9E1eC7ADcf89E6; // Holder USDC
     address user2 = 0x52Aa899454998Be5b000Ad077a46Bbe360F4e497; //Holder USDT
     address user3 = 0xB38e8c17e38363aF6EbdCb3dAE12e0243582891D; // Holder multiple tokens
@@ -21,7 +22,7 @@ contract SwapTokensAppTest is Test {
     address DAI = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1; // DAI Address in Arbitrum One Mainnet
 
     function setUp() public {
-        swapEthTokensApp = new SwapEthTokensApp(routerAddress, USDT, USDC, DAI);
+        swapEthTokensApp = new SwapEthTokensApp(routerAddress, factoryAddress, USDT, USDC, DAI);
     }
 
     function testInitialDeploy() public view {
@@ -179,10 +180,22 @@ contract SwapTokensAppTest is Test {
         uint256 deadline_ = 1744647360 + 600000;
 
         vm.startPrank(user2);
+        //  Balance before Add Liquidity
+        uint256 userTokenABefore = IERC20(tokenA_).balanceOf(user2);
         IERC20(tokenA_).approve(address(swapEthTokensApp), amountIn_);
-        swapEthTokensApp.addLiquidityFromOneToken(
+        uint256 lpTokenAmount_ = swapEthTokensApp.addLiquidityFromOneToken(
             amountIn_, amountOutMin_, path_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
         );
+
+        //  Get address and balance of LPTokens
+        address lpToken = IFactory(factoryAddress).getPair(tokenA_, tokenB_);
+        uint256 userLpBalance = IERC20(lpToken).balanceOf(user2);
+
+        // Balance after addLiquidity
+        uint256 userTokenAAfter = IERC20(tokenA_).balanceOf(user2);
+
+        assert(userLpBalance >= lpTokenAmount_);
+        assert(userTokenAAfter < userTokenABefore);
         vm.stopPrank();
     }
 
@@ -238,11 +251,24 @@ contract SwapTokensAppTest is Test {
         uint256 deadline_ = 1744647360 + 600000;
 
         vm.startPrank(user3);
+        //  Balance before Add Liquidity
+        uint256 userTokenABefore = IERC20(tokenA_).balanceOf(user3);
+        uint256 userTokenBBefore = IERC20(tokenB_).balanceOf(user3);
         IERC20(tokenA_).approve(address(swapEthTokensApp), amountA_);
         IERC20(tokenB_).approve(address(swapEthTokensApp), amountB_);
-        swapEthTokensApp.addLiquidityFromTwoTokens(
+        uint256 lpTokenAmount_ = swapEthTokensApp.addLiquidityFromTwoTokens(
             amountA_, amountB_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
         );
+        //Balance After
+        uint256 userTokenAAfter = IERC20(tokenA_).balanceOf(user3);
+        uint256 userTokenBAfter = IERC20(tokenB_).balanceOf(user3);
+        //  Get address and balance of LPTokens
+        address lpToken = IFactory(factoryAddress).getPair(tokenA_, tokenB_);
+        uint256 userLpBalance = IERC20(lpToken).balanceOf(user3);
+
+        assert(userLpBalance >= lpTokenAmount_);
+        assert(userTokenAAfter < userTokenABefore);
+        assert(userTokenBAfter < userTokenBBefore);
         vm.stopPrank();
     }
 
@@ -277,6 +303,47 @@ contract SwapTokensAppTest is Test {
         swapEthTokensApp.addLiquidityFromTwoTokens(
             amountA_, amountB_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
         );
+        vm.stopPrank();
+    }
+
+    function testRemoveLiquidity() public {
+        uint256 amountIn_ = 10 * 1e6;
+        uint256 amountOutMin_ = 4.5 * 1e18;
+        address[] memory path_ = new address[](2);
+        path_[0] = USDT;
+        path_[1] = DAI;
+        address tokenA_ = USDT;
+        address tokenB_ = DAI;
+        uint256 amountAMin_ = 0;
+        uint256 amountBMin_ = 0;
+        uint256 deadline_ = 1744647360 + 600000;
+
+        vm.startPrank(user2);
+        //  Balance before Add Liquidity
+        uint256 userTokenABefore = IERC20(tokenA_).balanceOf(user2);
+        IERC20(tokenA_).approve(address(swapEthTokensApp), amountIn_);
+        uint256 lpTokenAmount_ = swapEthTokensApp.addLiquidityFromOneToken(
+            amountIn_, amountOutMin_, path_, tokenA_, tokenB_, amountAMin_, amountBMin_, deadline_
+        );
+
+        //  Get address and balance of LPTokens
+        address lpToken = IFactory(factoryAddress).getPair(tokenA_, tokenB_);
+        uint256 userLpBalance = IERC20(lpToken).balanceOf(user2);
+
+        // Balance after addLiquidity
+        uint256 userTokenAAfter = IERC20(tokenA_).balanceOf(user2);
+
+        assert(userLpBalance >= lpTokenAmount_);
+        assert(userTokenAAfter < userTokenABefore);
+
+        IERC20(lpToken).approve(address(swapEthTokensApp), lpTokenAmount_);
+        swapEthTokensApp.removeLiquidity(tokenA_, tokenB_, lpTokenAmount_, amountAMin_, amountBMin_, user2, deadline_);
+        
+        uint256 userTokenAAfterRL = IERC20(tokenA_).balanceOf(user2);
+        uint256 userLpBalanceAfterRL = IERC20(lpToken).balanceOf(user2);
+        
+        assert(userTokenAAfterRL > userTokenAAfter);
+        assert(userLpBalanceAfterRL < userLpBalance);
         vm.stopPrank();
     }
 }
