@@ -60,6 +60,16 @@ Initializes the contract with the router and factory addresses, and the supporte
 
 ---
 
+---
+
+### 🔑 Modifiers
+
+| **Modifier**              | **Description**                          |
+|------------------------|------------------------------------------|
+| `validPairs`      | Ensures the pair is composed of valid stablecoins.          |
+
+---
+
 ## 🧪 Testing with Foundry
 
 All swap and liquidity functions are thoroughly tested with **Foundry** using real user addresses and tokens on the **Arbitrum One** mainnet.
