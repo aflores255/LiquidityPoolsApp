@@ -9,7 +9,7 @@ pragma solidity 0.8.28;
 import {Script} from "forge-std/Script.sol";
 import {SmartDefiApp} from "../src/SmartDefiApp.sol";
 
-contract FloMarketplaceDeploy is Script {
+contract SmartDefiAppDeploy is Script {
     function run() external returns (SmartDefiApp) {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address routerAddress = 0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24; // Arbitrum One
