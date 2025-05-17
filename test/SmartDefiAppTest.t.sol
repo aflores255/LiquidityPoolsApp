@@ -27,7 +27,7 @@ contract SwapTokensAppTest is Test {
     function setUp() public {
         smartDefiApp = new SmartDefiApp(routerAddress, factoryAddress, USDT, USDC, DAI);
     }
-    
+
     /**
      * @notice Verifies the initial Router address is correctly set.
      */
@@ -325,7 +325,7 @@ contract SwapTokensAppTest is Test {
         );
         vm.stopPrank();
     }
-    
+
     /**
      * @notice Reverts if one of the input amounts is zero.
      */
@@ -347,7 +347,7 @@ contract SwapTokensAppTest is Test {
         );
         vm.stopPrank();
     }
-    
+
     /**
      * @notice Tests removing liquidity after adding it.
      */
