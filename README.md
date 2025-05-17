@@ -23,6 +23,30 @@ Built in **Solidity 0.8.28**, SmartDefiApp leverages OpenZeppelin’s `SafeERC20
 
 ---
 
+## ⚙️ How It Works
+
+The `SmartDefiApp` protocol is composed of a single smart contract designed to simplify and standardize token swaps and liquidity interactions on EVM-compatible blockchains. Below is a breakdown of the components and their responsibilities:
+
+---
+
+### 🧩 Smart Contracts Overview
+
+| Contract | Description |
+|----------|-------------|
+| [`SmartDefiApp`](https://arbiscan.io/address/0xcc0029c0109b12b108f1c3bce5bdc1dcec6ced9c) | Core contract of the protocol. Handles token swaps (ERC-20 and ETH), single- and dual-token liquidity provisioning, and liquidity removal. Uses a Uniswap V2-compatible router under the hood. |
+| [`IRouterV2`](https://github.com/aflores255/LiquidityPoolsApp/blob/master/src/interfaces/IRouterV2.sol) | Interface used to interact with external routers such as Uniswap V2 or SushiSwap. Supports swapping, adding, and removing liquidity. |
+| [`IFactory`](https://github.com/aflores255/LiquidityPoolsApp/blob/master/src/interfaces/IFactory.sol) | Interface for querying LP token pair addresses from a Uniswap V2-compatible factory. Used during liquidity operations. |
+
+### 🔗 External Dependencies
+
+- **Router**: [Arbitrum RouterV2](https://arbiscan.io/address/0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24) – used for executing swaps and managing liquidity
+- **Factory**: [Arbitrum Factory](https://arbiscan.io/address/0xf1D7CC64Fb4452F05c498126312eBE29f30Fbcf9) – used to locate LP token addresses
+- **Tokens**: Supports USDC, USDT, DAI, and WETH on Arbitrum One
+- **OpenZeppelin Contracts**: [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts)
+- **Foundry**: [Foundry](https://book.getfoundry.sh/)
+
+---
+
 ## 📜 Contract Details
 
 ### ⚙️ Constructor
@@ -72,6 +96,82 @@ Initializes the contract with the router and factory addresses, and the supporte
 
 ---
 
+## 🚀 Deployment & Usage
+
+This section explains how to interact with the `SmartDefiApp` smart contract deployed on the **Arbitrum One** network. It covers how to perform token swaps, add and remove liquidity, and provides a real transaction example to follow.
+
+🔗 **Deployed Contract:** [0xcc0029c0109b12b108f1c3bce5bdc1dcec6ced9c on Arbiscan](https://arbiscan.io/address/0xcc0029c0109b12b108f1c3bce5bdc1dcec6ced9c)
+
+---
+
+### 🔁 How to Swap Tokens
+
+To swap one token for another using `SmartDefiApp`:
+
+1. Go to the [Write Contract tab on Arbiscan](https://arbiscan.io/address/0xcc0029c0109b12b108f1c3bce5bdc1dcec6ced9c#writeContract) and connect your wallet (make sure it's on Arbitrum One).
+2. Approve the contract to spend your token using the token’s own contract (via `approve(spender, amount)`).
+3. Call `swapExactTokensForTokens` with:
+   - `amountIn_`: amount of tokens to swap (e.g. `1500000` for 1.5 USDC)
+   - `amountOutMin_`: minimum amount of output tokens accepted
+   - `path_`: array of token addresses (e.g. `[USDC, USDT]`)
+   - `to_`: your wallet address
+   - `deadline_`: Unix timestamp (e.g. `block.timestamp + 600`)
+
+✅ Example: Swap 1.5 USDC → USDT  
+- `amountIn_`: `1500000`  
+- `amountOutMin_`: `1400000`  
+- `path_`: `[0xaf88d065e77c8cC2239327C5EDb3A432268e5831, 0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9]`  
+- `to_`: your wallet address  
+- `deadline_`: current time + 10 minutes
+
+---
+
+### 💧 How to Add Liquidity
+
+To provide liquidity to a token pair (e.g. USDT/DAI):
+
+1. Approve the contract to spend both tokens.
+2. Use `addLiquidityFromTwoTokens` with:
+   - `amountA_` and `amountB_`: amounts of each token
+   - `tokenA_` and `tokenB_`: token addresses
+   - `amountAMin_` and `amountBMin_`: slippage tolerances
+   - `deadline_`: timestamp deadline
+
+You can also use `addLiquidityFromOneToken` to deposit one token and have the contract split and convert it to form a pair automatically.
+
+---
+
+### 🧼 How to Remove Liquidity
+
+To remove liquidity and receive your underlying tokens:
+
+1. Use `removeLiquidity` with:
+   - `tokenA_` and `tokenB_`: the token pair
+   - `liquidity_`: amount of LP tokens to withdraw
+   - `amountAMin_`, `amountBMin_`: minimum tokens to receive
+   - `to_`: your address
+   - `deadline_`: timestamp
+
+Make sure you've approved the contract to spend your LP tokens.
+
+---
+
+### 📦 Real Example Transaction
+
+Here is a real transaction on Arbitrum using this contract to swap tokens:
+
+🔹 [Tx Hash: 0x392aaee3eeb91cf43de2b3df107bde1d8893d4210adc63f490e192adf9f91d0c](https://arbiscan.io/tx/0x392aaee3eeb91cf43de2b3df107bde1d8893d4210adc63f490e192adf9f91d0c)  
+- Swapped: 0.0005 WETH → 1.23 USDT  
+- Path: `[WETH, USDT]`  
+- User: `0x...`  
+- Contract: `SmartDefiApp`
+
+---
+
+You can interact with the contract directly via Arbiscan or through a front-end interface that supports contract method encoding and Web3 wallet interaction (e.g. Etherscan, Remix, or your custom dApp).
+
+---
+
 ## 🧪 Testing with Foundry
 
 All swap and liquidity functions are thoroughly tested with **Foundry** using real user addresses and tokens on the **Arbitrum One** mainnet.
@@ -104,15 +204,6 @@ forge test
 | File                    | % Lines         | % Statements     | % Branches      | % Functions     |
 |-------------------------|------------------|-------------------|------------------|------------------|
 | `src/SmartDefiApp.sol` | 100.00% (67/67) | 100.00% (62/62) | 100.00% (10/10) | 100.00% (11/11)   |
-
----
-
-## 🔗 Dependencies
-
-- [OpenZeppelin Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts)
-- [Foundry](https://book.getfoundry.sh/)
-- [`IRouterV2.sol`](https://github.com/aflores255/LiquidityPoolsApp/blob/master/src/interfaces/IRouterV2.sol)
-- [`IFactory.sol`](https://github.com/aflores255/LiquidityPoolsApp/blob/master/src/interfaces/IFactory.sol)
 
 ---
 
