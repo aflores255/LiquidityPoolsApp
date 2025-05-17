@@ -192,9 +192,9 @@ contract SmartDefiApp {
         // First step, swap tokens
         uint256 exactAmountOut = swapExactTokensForTokens(halfAmount, amountOutMin_, path_, address(this), deadline_);
 
-        lpTokenAmount_ =
+        uint256 lpTokenAmount =
             approveAndAddLiquidity(tokenA_, tokenB_, halfAmount, exactAmountOut, amountAMin_, amountBMin_, deadline_);
-        return lpTokenAmount_;
+        return lpTokenAmount;
     }
 
     /**
@@ -220,9 +220,9 @@ contract SmartDefiApp {
         require(amountA_ > 0 && amountB_ > 0, "Amount must be above zero");
         IERC20(tokenA_).safeTransferFrom(msg.sender, address(this), amountA_);
         IERC20(tokenB_).safeTransferFrom(msg.sender, address(this), amountB_);
-        lpTokenAmount_ =
+        uint256 lpTokenAmount =
             approveAndAddLiquidity(tokenA_, tokenB_, amountA_, amountB_, amountAMin_, amountBMin_, deadline_);
-        return lpTokenAmount_;
+        return lpTokenAmount;
     }
 
     /**
@@ -231,7 +231,7 @@ contract SmartDefiApp {
      * @param tokenB_ Second token of the pair.
      * @param liquidity_ Amount of LP tokens to burn.
      * @param amountAMin_ Minimum amount of token A to receive.
-     * @param amountBMin_ Minimum amount of token B to receive.
+     * @param amountBMin_ Minimum amount of token B to receive.ad
      * @param to_ Recipient of the underlying tokens.
      * @param deadline_ Deadline for the transaction.
      */

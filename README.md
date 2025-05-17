@@ -1,10 +1,12 @@
-# 🔁 SmartDefiApp
+# 🔁 SmartDefiApp -  A DeFi Protocol for Token Swaps and Liquidity Management on EVM Chains
 
 ## 📌 Description
 
-**SmartDefiApp** is a Solidity smart contract that allows users to swap between ERC-20 tokens and ETH, as well as provide and remove liquidity using a Uniswap V2-compatible router. It supports major DeFi operations like token swaps, ETH conversions, and liquidity management in a secure and efficient way.
+**SmartDefiApp** is a smart contract designed to simplify and unify core DeFi operations such as token swaps and liquidity management, using a Uniswap V2-compatible router. It enables users to swap between ERC-20 tokens and ETH, provide liquidity using either one or two tokens, and remove liquidity with full control over slippage and deadlines — all from a single, streamlined interface.
 
-Built with **Solidity 0.8.28**, this contract uses OpenZeppelin's `SafeERC20` for secure token interactions and includes a comprehensive **Foundry** test suite, tested on **Arbitrum One**.
+The contract supports major stablecoins like USDC, USDT, and DAI by default, making it well-suited for real-world use cases and integrations with other protocols. Its logic handles the complexities of token approvals, routing, and safe transfers under the hood, so developers can focus on building user-facing applications without reinventing swap or liquidity flows.
+
+Built in **Solidity 0.8.28**, SmartDefiApp leverages OpenZeppelin’s `SafeERC20` for secure token handling and is fully tested on **Arbitrum One** using the **Foundry** framework. It’s a modular, gas-efficient base for any dApp, aggregator, or DeFi tool aiming to interact with liquidity pools in a reliable and extensible way.
 
 ---
 
@@ -91,6 +93,18 @@ All swap and liquidity functions are thoroughly tested with **Foundry** using re
 | `testIncorrectPairAddLiquidity*`       | Ensures validation of token pair constraints.       |
 | `testIncorrectAmountAddLiquidity*`     | Ensures non-zero amount validation.                 |
 
+### 🧪 Run Tests
+
+```bash
+forge test
+```
+
+### 📊 Coverage Report
+
+| File                    | % Lines         | % Statements     | % Branches      | % Functions     |
+|-------------------------|------------------|-------------------|------------------|------------------|
+| `src/SmartDefiApp.sol` | 100.00% (67/67) | 100.00% (62/62) | 100.00% (10/10) | 100.00% (11/11)   |
+
 ---
 
 ## 🔗 Dependencies
@@ -99,43 +113,6 @@ All swap and liquidity functions are thoroughly tested with **Foundry** using re
 - [Foundry](https://book.getfoundry.sh/)
 - [`IRouterV2.sol`](https://github.com/aflores255/LiquidityPoolsApp/blob/master/src/interfaces/IRouterV2.sol)
 - [`IFactory.sol`](https://github.com/aflores255/LiquidityPoolsApp/blob/master/src/interfaces/IFactory.sol)
-
----
-
-## 🛠️ How to Use
-
-### 🔧 Prerequisites
-
-- [Foundry](https://book.getfoundry.sh/getting-started/installation)
-- Access to the **Arbitrum One** network
-- Wallet with ETH and supported tokens (USDC, USDT, DAI)
-
----
-
-### 🧪 Run Tests
-
-```bash
-forge test
-```
-
----
-
-### 🚀 Deployment
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/aflores255/SmartDefiApp.git
-cd SmartDefiApp
-```
-
-2. Deploy the contract:
-
-```solidity
-new SmartDefiApp(router, factory, usdt, usdc, dai);
-```
-
-Use valid addresses for the router, factory, and token contracts.
 
 ---
 
