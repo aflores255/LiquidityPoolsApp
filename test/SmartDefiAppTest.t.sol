@@ -21,18 +21,27 @@ contract SwapTokensAppTest is Test {
     address WETH = 0x82aF49447D8a07e3bd95BD0d56f35241523fBab1; //WETH Address in Arbitrum One Mainnet
     address DAI = 0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1; // DAI Address in Arbitrum One Mainnet
 
+    /**
+     * @notice Deploys the SmartDefiApp contract before each test.
+     */
     function setUp() public {
         smartDefiApp = new SmartDefiApp(routerAddress, factoryAddress, USDT, USDC, DAI);
     }
-
+    
+    /**
+     * @notice Verifies the initial Router address is correctly set.
+     */
     function testInitialDeploy() public view {
         assert(smartDefiApp.RouterV2Address() == routerAddress);
     }
 
+    /**
+     * @notice Tests swapping an exact amount of USDC for USDT.
+     */
     function testSwapExactTokensForTokens() public {
         uint256 amountIn_ = 10 * 1e6;
         uint256 amountOutMin_ = 9 * 1e6;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
         address[] memory path_ = new address[](2);
         path_[0] = USDC;
         path_[1] = USDT;
@@ -56,10 +65,13 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Tests swapping USDC for an exact amount of USDT.
+     */
     function testSwapTokensForExactTokens() public {
         uint256 amountOut_ = 9 * 1e6;
         uint256 amountInMax_ = 10 * 1e6;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         address[] memory path_ = new address[](2);
         path_[0] = USDC;
@@ -84,10 +96,13 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Tests swapping an exact amount of USDC for ETH.
+     */
     function testSwapExactTokensForETH() public {
         uint256 amountIn_ = 10 * 1e6;
         uint256 amountOutMin_ = 0.003 ether;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         address[] memory path_ = new address[](2);
         path_[0] = USDC;
@@ -107,10 +122,13 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Tests swapping USDC for an exact amount of ETH.
+     */
     function testSwapTokensForExactETH() public {
         uint256 amountOut_ = 0.003 ether;
         uint256 amountInMax_ = 10 * 1e6;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         address[] memory path_ = new address[](2);
         path_[0] = USDC;
@@ -133,10 +151,13 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Tests swapping ETH for USDC.
+     */
     function testSwapExactETHForTokens() public {
         uint256 amountOutMin_ = 1.5 * 1e6;
         uint256 ethAmount_ = 0.001 ether;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         address[] memory path_ = new address[](2);
         path_[0] = WETH;
@@ -152,10 +173,13 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Reverts if ETH sent is zero in ETH-for-token swap.
+     */
     function testIncorrectSwapExactETHForTokens() public {
         uint256 amountOutMin_ = 1.5 * 1e6;
         uint256 ethAmount_ = 0 ether;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         address[] memory path_ = new address[](2);
         path_[0] = WETH;
@@ -167,6 +191,9 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Tests adding liquidity using a single token (USDT).
+     */
     function testAddLiquidityFromOneToken() public {
         uint256 amountIn_ = 10 * 1e6;
         uint256 amountOutMin_ = 4.5 * 1e18;
@@ -177,7 +204,7 @@ contract SwapTokensAppTest is Test {
         address tokenB_ = DAI;
         uint256 amountAMin_ = 0;
         uint256 amountBMin_ = 0;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         vm.startPrank(user2);
         //  Balance before Add Liquidity
@@ -199,6 +226,9 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Reverts if both tokens in the pair are the same.
+     */
     function testIncorrectPairAddLiquidityFromOneToken() public {
         uint256 amountIn_ = 10 * 1e6;
         uint256 amountOutMin_ = 4.5 * 1e18;
@@ -209,7 +239,7 @@ contract SwapTokensAppTest is Test {
         address tokenB_ = USDT;
         uint256 amountAMin_ = 0;
         uint256 amountBMin_ = 0;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         vm.startPrank(user2);
         IERC20(tokenA_).approve(address(smartDefiApp), amountIn_);
@@ -220,6 +250,9 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Reverts if token input amount is zero.
+     */
     function testIncorrectAmountAddLiquidityFromOneToken() public {
         uint256 amountIn_ = 0 * 1e6;
         uint256 amountOutMin_ = 4.5 * 1e18;
@@ -230,7 +263,7 @@ contract SwapTokensAppTest is Test {
         address tokenB_ = DAI;
         uint256 amountAMin_ = 0;
         uint256 amountBMin_ = 0;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         vm.startPrank(user2);
         IERC20(tokenA_).approve(address(smartDefiApp), amountIn_);
@@ -241,6 +274,9 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Tests adding liquidity using two tokens.
+     */
     function testAddLiquidityFromTwoTokens() public {
         uint256 amountA_ = 10 * 1e6;
         uint256 amountB_ = 10 * 1e18;
@@ -248,7 +284,7 @@ contract SwapTokensAppTest is Test {
         address tokenB_ = DAI;
         uint256 amountAMin_ = 0;
         uint256 amountBMin_ = 0;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         vm.startPrank(user3);
         //  Balance before Add Liquidity
@@ -272,11 +308,14 @@ contract SwapTokensAppTest is Test {
         vm.stopPrank();
     }
 
+    /**
+     * @notice Reverts if the two tokens in the pair are identical.
+     */
     function testIncorrectPairAddLiquidityFromTwoTokens() public {
         uint256 amountA_ = 10 * 1e6;
         address tokenA_ = USDT;
         uint256 amountAMin_ = 0;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         vm.startPrank(user3);
         IERC20(tokenA_).approve(address(smartDefiApp), amountA_);
@@ -286,7 +325,10 @@ contract SwapTokensAppTest is Test {
         );
         vm.stopPrank();
     }
-
+    
+    /**
+     * @notice Reverts if one of the input amounts is zero.
+     */
     function testIncorrectAmountAddLiquidityFromTwoTokens() public {
         uint256 amountA_ = 0 * 1e6;
         uint256 amountB_ = 10 * 1e18;
@@ -294,7 +336,7 @@ contract SwapTokensAppTest is Test {
         address tokenB_ = DAI;
         uint256 amountAMin_ = 0;
         uint256 amountBMin_ = 0;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         vm.startPrank(user3);
         IERC20(tokenA_).approve(address(smartDefiApp), amountA_);
@@ -305,7 +347,10 @@ contract SwapTokensAppTest is Test {
         );
         vm.stopPrank();
     }
-
+    
+    /**
+     * @notice Tests removing liquidity after adding it.
+     */
     function testRemoveLiquidity() public {
         uint256 amountIn_ = 10 * 1e6;
         uint256 amountOutMin_ = 4.5 * 1e18;
@@ -316,7 +361,7 @@ contract SwapTokensAppTest is Test {
         address tokenB_ = DAI;
         uint256 amountAMin_ = 0;
         uint256 amountBMin_ = 0;
-        uint256 deadline_ = 1744647360 + 600000;
+        uint256 deadline_ = block.timestamp + 600000;
 
         vm.startPrank(user2);
         //  Balance before Add Liquidity

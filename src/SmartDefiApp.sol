@@ -39,8 +39,14 @@ contract SmartDefiApp {
         _;
     }
 
-    //Constructor
-
+    /**
+     * @notice Initializes the contract with required addresses.
+     * @param RouterV2Address_ Address of the DEX router.
+     * @param FactoryAddress_ Address of the DEX factory.
+     * @param USDT_ Address of USDT token.
+     * @param USDC_ Address of USDC token.
+     * @param DAI_ Address of DAI token.
+     */
     constructor(address RouterV2Address_, address FactoryAddress_, address USDT_, address USDC_, address DAI_) {
         RouterV2Address = RouterV2Address_;
         FactoryAddress = FactoryAddress_;
@@ -49,7 +55,15 @@ contract SmartDefiApp {
         DAI = DAI_;
     }
 
-    // 1. Swap exact tokens for tokens
+    /**
+     * @notice Swaps an exact amount of input tokens for as many output tokens as possible.
+     * @param amountIn_ Amount of input tokens to send.
+     * @param amountOutMin_ Minimum amount of output tokens expected.
+     * @param path_ Swap path (array of token addresses).
+     * @param to_ Recipient address for the output tokens.
+     * @param deadline_ Unix timestamp after which the transaction will revert.
+     * @return exactAmountOut Amount of tokens received.
+     */
     function swapExactTokensForTokens(
         uint256 amountIn_,
         uint256 amountOutMin_,
@@ -69,8 +83,13 @@ contract SmartDefiApp {
         return amountsOut_[amountsOut_.length - 1];
     }
 
-    // 2. Swap Tokens for Exact Tokens
-
+    /**
+     * @notice Swaps tokens for an exact amount of another token.
+     * @param amountOut_ Exact amount of output tokens desired.
+     * @param amountInMax_ Maximum amount of input tokens to spend.
+     * @param path_ Swap path.
+     * @param deadline_ Deadline for the swap.
+     */
     function swapTokensForExactTokens(
         uint256 amountOut_,
         uint256 amountInMax_,
@@ -88,7 +107,12 @@ contract SmartDefiApp {
         emit SwapERC20Tokens(path_[0], path_[path_.length - 1], amounts_[0], amountOut_);
     }
 
-    // 3. Swap Exact Eth for Tokens
+    /**
+     * @notice Swaps ETH for as many output tokens as possible.
+     * @param amountOutMin_ Minimum amount of tokens to receive.
+     * @param path_ Swap path (starts with WETH).
+     * @param deadline_ Deadline for the swap.
+     */
     function swapExactETHForTokens(uint256 amountOutMin_, address[] memory path_, uint256 deadline_) external payable {
         require(msg.value > 0, "Incorrect amount");
         uint256[] memory amounts_ = IRouterV2(RouterV2Address).swapExactETHForTokens{value: msg.value}(
@@ -98,8 +122,13 @@ contract SmartDefiApp {
         emit SwapETHForTokens(path_[path_.length - 1], msg.value, amounts_[amounts_.length - 1]);
     }
 
-    // 4. Swap Tokens for Exact Eth
-
+    /**
+     * @notice Swaps tokens for an exact amount of ETH.
+     * @param amountOut_ Exact amount of ETH desired.
+     * @param amountInMax_ Maximum input tokens to spend.
+     * @param path_ Swap path.
+     * @param deadline_ Deadline for the transaction.
+     */
     function swapTokensForExactETH(uint256 amountOut_, uint256 amountInMax_, address[] memory path_, uint256 deadline_)
         external
     {
@@ -114,7 +143,13 @@ contract SmartDefiApp {
         emit SwapTokensForETH(path_[0], amounts_[0], amountOut_);
     }
 
-    // 5. Swap Exact Tokens for ETH
+    /**
+     * @notice Swaps an exact amount of tokens for ETH.
+     * @param amountIn_ Amount of tokens to send.
+     * @param amountOutMin_ Minimum amount of ETH to receive.
+     * @param path_ Swap path.
+     * @param deadline_ Deadline for the swap.
+     */
     function swapExactTokensForETH(uint256 amountIn_, uint256 amountOutMin_, address[] memory path_, uint256 deadline_)
         external
     {
@@ -127,7 +162,18 @@ contract SmartDefiApp {
         emit SwapTokensForETH(path_[0], amountIn_, amounts[amounts.length - 1]);
     }
 
-    // 6. Add Liquidity From One Token
+    /**
+     * @notice Adds liquidity using a single token that is split and swapped to form a pair.
+     * @param amountIn_ Total amount of input token to use.
+     * @param amountOutMin_ Minimum output expected from swap.
+     * @param path_ Swap path to obtain the second token.
+     * @param tokenA_ First token in the pair.
+     * @param tokenB_ Second token in the pair.
+     * @param amountAMin_ Minimum amount of tokenA to add.
+     * @param amountBMin_ Minimum amount of tokenB to add.
+     * @param deadline_ Deadline for the transaction.
+     * @return lpTokenAmount_ Amount of LP tokens received.
+     */
     function addLiquidityFromOneToken(
         uint256 amountIn_,
         uint256 amountOutMin_,
@@ -151,8 +197,17 @@ contract SmartDefiApp {
         return lpTokenAmount_;
     }
 
-    // 7. Add Liquidity 2 Tokens
-
+    /**
+     * @notice Adds liquidity using two token amounts directly.
+     * @param amountA_ Amount of token A to add.
+     * @param amountB_ Amount of token B to add.
+     * @param tokenA_ Address of token A.
+     * @param tokenB_ Address of token B.
+     * @param amountAMin_ Minimum accepted amount of token A.
+     * @param amountBMin_ Minimum accepted amount of token B.
+     * @param deadline_ Deadline for the transaction.
+     * @return lpTokenAmount_ Amount of LP tokens received.
+     */
     function addLiquidityFromTwoTokens(
         uint256 amountA_,
         uint256 amountB_,
@@ -170,6 +225,16 @@ contract SmartDefiApp {
         return lpTokenAmount_;
     }
 
+    /**
+     * @notice Removes liquidity from a token pair.
+     * @param tokenA_ First token of the pair.
+     * @param tokenB_ Second token of the pair.
+     * @param liquidity_ Amount of LP tokens to burn.
+     * @param amountAMin_ Minimum amount of token A to receive.
+     * @param amountBMin_ Minimum amount of token B to receive.
+     * @param to_ Recipient of the underlying tokens.
+     * @param deadline_ Deadline for the transaction.
+     */
     function removeLiquidity(
         address tokenA_,
         address tokenB_,
@@ -191,8 +256,16 @@ contract SmartDefiApp {
         emit RemoveLiquidity(tokenA_, tokenB_, amountTokenA_, amountTokenB_);
     }
 
-    // Internal Functions
-
+    /**
+     * @param tokenA_ Address of token A.
+     * @param tokenB_ Address of token B.
+     * @param amountA_ Amount of token A.
+     * @param amountB_ Amount of token B.
+     * @param amountAMin_ Minimum accepted amount of token A.
+     * @param amountBMin_ Minimum accepted amount of token B.
+     * @param deadline_ Deadline for the transaction.
+     * @return lpTokenAmount_ Amount of LP tokens received.
+     */
     function approveAndAddLiquidity(
         address tokenA_,
         address tokenB_,
