@@ -33,7 +33,7 @@ The `SmartDefiApp` protocol is composed of a single smart contract designed to s
 
 | Contract | Description |
 |----------|-------------|
-| [`SmartDefiApp`](https://arbiscan.io/address/0xcc0029c0109b12b108f1c3bce5bdc1dcec6ced9c) | Core contract of the protocol. Handles token swaps (ERC-20 and ETH), single- and dual-token liquidity provisioning, and liquidity removal. Uses a Uniswap V2-compatible router under the hood. |
+| [`SmartDefiApp`](https://github.com/aflores255/LiquidityPoolsApp/blob/master/src/SmartDefiApp.sol) | Core contract of the protocol. Handles token swaps (ERC-20 and ETH), single- and dual-token liquidity provisioning, and liquidity removal. Uses a Uniswap V2-compatible router under the hood. |
 | [`IRouterV2`](https://github.com/aflores255/LiquidityPoolsApp/blob/master/src/interfaces/IRouterV2.sol) | Interface used to interact with external routers such as Uniswap V2 or SushiSwap. Supports swapping, adding, and removing liquidity. |
 | [`IFactory`](https://github.com/aflores255/LiquidityPoolsApp/blob/master/src/interfaces/IFactory.sol) | Interface for querying LP token pair addresses from a Uniswap V2-compatible factory. Used during liquidity operations. |
 
